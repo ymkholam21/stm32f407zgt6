@@ -18,13 +18,14 @@
   *
   *
   *
-  *                           TIMER
+  *                           TIMER_PROGRAM
   ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+// them ham sofware_timer.h
+#include "software_timer.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -99,9 +100,15 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  setTimer1(100);
   while (1)
   {
     /* USER CODE END WHILE */
+	  if(timer1_flag == 1){
+		  setTimer1(100);
+		  // TODO
+		  HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+	  }
 
     /* USER CODE BEGIN 3 */
   }
@@ -220,18 +227,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int counter = 100;
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	if(counter > 0){
-		counter --;
-		if(counter <= 0)
-		{
-			counter = 100;
-			// to do
-			HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
-		}
-	}
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+
+	timerRun();
 }
 
 /* USER CODE END 4 */
