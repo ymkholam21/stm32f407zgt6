@@ -43,7 +43,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 // tao mang truyen du lieu
-uint8_t TX[] = "ABC123\n";
+uint8_t TX[] = "ABC123\n\r";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
