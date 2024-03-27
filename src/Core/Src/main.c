@@ -45,7 +45,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 // tao mang truyen du lieu
-uint8_t TX[4],RX[4], RX1[4] ;
+uint8_t TX[4],RX[4];
 volatile uint8_t cnt = 0;
 /* USER CODE END PV */
 
@@ -95,12 +95,15 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
+  // Điều khiển chân CS (tích cực thấp)
   HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+
+  // Điều khiển tín hiệu enable
   HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, 0);
   HAL_Delay(100);
   HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, 1);
-
-
+  HAL_Delay(100);
+  // Điều khiển tín hiệu START/STOP
   HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
   HAL_Delay(1);
   HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 0);
