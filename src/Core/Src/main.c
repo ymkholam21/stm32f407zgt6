@@ -45,7 +45,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 // tao mang truyen du lieu
-uint8_t TX[4],RX[4], RX1[4] ,RX2[4] ;
+uint8_t TX[4],RX[4], RX1[4] ,RX2[4], REG_VALUE[4] ;
 volatile uint8_t run_flag, start_complted, meas_complted;
 #define DUMMY                     0x00
 
@@ -257,7 +257,20 @@ int main(void)
 	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 2, 100);
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
 	  HAL_Delay(500);
+// DOC THANH GHI CONFIG 1
+	  	TX[0]=0x00;
+	  	TX[1]=0x00;
+	  	TX[2]=0x00;
+	  	TX[3]=0x00;
 
+	  	REG_VALUE[0]=0x00;
+	  	REG_VALUE[1]=0x00;
+	  	REG_VALUE[2]=0x00;
+	  	REG_VALUE[3]=0x00;
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, REG_VALUE, 2, 100);
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  HAL_Delay(500);
 
 
 
@@ -267,7 +280,7 @@ int main(void)
 	  delay_1us(1);
 	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
 
-	  delay_1us(1000);
+	  delay_1us(50);
 
 	  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 1);
 	  delay_1us(1);
@@ -484,9 +497,9 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
@@ -495,13 +508,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, LED0_Pin|LED1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, START_TDC_Pin|STOP_TDC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, STOP_TDC_Pin|enable_spi_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
@@ -513,25 +526,25 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : START_TDC_Pin STOP_TDC_Pin */
-  GPIO_InitStruct.Pin = START_TDC_Pin|STOP_TDC_Pin;
+  /*Configure GPIO pins : STOP_TDC_Pin CSn_spi_Pin enable_spi_Pin */
+  GPIO_InitStruct.Pin = STOP_TDC_Pin|CSn_spi_Pin|enable_spi_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : START_TDC_Pin */
+  GPIO_InitStruct.Pin = START_TDC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(START_TDC_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : KEY3_Pin KEY2_Pin KEY1_Pin GPIO_EXTI0_Pin */
   GPIO_InitStruct.Pin = KEY3_Pin|KEY2_Pin|KEY1_Pin|GPIO_EXTI0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CSn_spi_Pin enable_spi_Pin */
-  GPIO_InitStruct.Pin = CSn_spi_Pin|enable_spi_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED2_Pin */
   GPIO_InitStruct.Pin = LED2_Pin;
