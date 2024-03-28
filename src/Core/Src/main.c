@@ -45,7 +45,7 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 // tao mang truyen du lieu
-uint8_t TX[4],RX[4];
+uint8_t TX[4],RX[4],RX1[4];
 volatile uint8_t cnt = 0;
 /* USER CODE END PV */
 
@@ -61,6 +61,21 @@ static void MX_SPI2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+
+//void write_data(uint8_t TX[4], uint8_t value, uint8_t RX[4])
+//{
+//	TX[0] = TX[0] + 64;
+//	TX[1] = value;
+//	TX[2] = 0x00;
+//	TX[3] = 0x00;
+//
+//	HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+//	HAL_SPI_TransmitReceive(&hspi2, TX, RX, 2, 100);
+//	HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+//	HAL_Delay(50);
+//	return RX[4];
+//}
 /* USER CODE END 0 */
 
 /**
@@ -161,11 +176,13 @@ int main(void)
 	  HAL_Delay(1);
 
 	  TX[0]=0x00 + 64; // + 64 tương ứng với việc write data vào thanh ghi 0h
-	  TX[1]=0x03;       // ghi giá trị 03h
+	  TX[1]=0x05;       // ghi giá trị 03h
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
 	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 2, 100);
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
 	  HAL_Delay(50);
+
+
 
 	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 1);
 	  HAL_Delay(2);
@@ -174,19 +191,34 @@ int main(void)
 	  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 0);
 	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
 	  //HAL_Delay(10);
-	  TX[0]=0x11;	// đọc thanh ghi tại địa chỉ 11h
+	  TX[0]=0x00;	// đọc thanh ghi tại địa chỉ 00h
 	  TX[1]=0x00;
       TX[2]=0x00;
 	  TX[3]=0x00;
 
-	  RX[0]=0x00;
-      RX[1]=0x00;
-	  RX[2]=0x00;
-	  RX[3]=0x00;
+	  RX1[0]=0x00;
+      RX1[1]=0x00;
+	  RX1[2]=0x00;
+	  RX1[3]=0x00;
 
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
-	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 4, 100);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, RX1, 4, 100);
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+
+
+//	  TX[0]=0x11;	// đọc thanh ghi tại địa chỉ 11h
+//	  TX[1]=0x00;
+//      TX[2]=0x00;
+//	  TX[3]=0x00;
+//
+//	  RX[0]=0x00;
+//      RX[1]=0x00;
+//	  RX[2]=0x00;
+//	  RX[3]=0x00;
+//
+//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+//	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 4, 100);
+//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
 
 //	  TX[0]=0x12;
 //	  TX[1]=0x00;
