@@ -45,8 +45,8 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 // tao mang truyen du lieu
-uint8_t TX[4],RX[4],RX1[4];
-volatile uint8_t cnt = 0;
+uint8_t TX[4],RX[4],RX1[4], RX2[4],CLOCK_COUNT1[4], CALIBRATION1[4],CALIBRATION2[4], TIME1[4],TIME2[4];
+volatile uint8_t cnt = 0, flag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,6 +56,12 @@ static void MX_USART1_UART_Init(void);
 static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
 
+void delay_1us(uint32_t N)
+{
+	for (int n = 0; n< N; n ++)
+		for (int m = 0; m < 60; m ++);
+
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,50 +116,20 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
-  // Điều khiển chân CS (tích cực thấp)
+  // �?i�?u khiển chân CS (tích cực thấp)
   HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
 
-  // Điều khiển tín hiệu enable
+  // �?i�?u khiển tín hiệu enable
   HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, 0);
   HAL_Delay(100);
   HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, 1);
   HAL_Delay(100);
-  // Điều khiển tín hiệu START/STOP
+  // �?i�?u khiển tín hiệu START/STOP
   HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
   HAL_Delay(1);
   HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 0);
   HAL_Delay(5);
-//
-//	TX[0]=0x00 + 64;
-//	TX[1]=0x03;
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
-//	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 2, 100);
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
-//	  HAL_Delay(50);
-//
-//  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 1);
-////  HAL_Delay(10);
-////  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
-//  HAL_Delay(5);
-//  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 1);
-//  HAL_Delay(10);
-//  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 0);
-//  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
-//  //HAL_Delay(10);
-//	TX[0]=0x10;
-//	TX[1]=0x00;
-//	TX[2]=0x00;
-//	TX[3]=0x00;
-//
-//	RX[0]=0x00;
-//	RX[1]=0x00;
-//	RX[2]=0x00;
-//	RX[3]=0x00;
-//
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
-//	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 4, 100);
-//
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -163,35 +139,58 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	cnt++;
-//	HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
-//	  HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, 0);
-//	  HAL_Delay(100);
-//	  HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, 1);
+	  cnt++;
 
-
+	  while(flag == 1)
+	  {
+// khoi tao START, STOP
 	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
-	  HAL_Delay(1);
+	  delay_1us(1);
 	  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 0);
-	  HAL_Delay(1);
+	  delay_1us(1);
 
+// XOA CO NHO TRONG THANH GHI 0x02
+	  TX[0]=0x02 +64;
+	  TX[1]=0xFF;
+      TX[2]=0x00;
+	  TX[3]=0x00;
+
+	  RX2[0]=0x00;
+      RX2[1]=0x00;
+	  RX2[2]=0x00;
+	  RX2[3]=0x00;
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, RX2, 2, 100);
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  HAL_Delay(100);
+
+	  //HAL_Delay(10);
+	  TX[0]=0x02;	// đ�?c thanh ghi tại địa chỉ 02h
+	  TX[1]=0x00;
+      TX[2]=0x00;
+	  TX[3]=0x00;
+
+	  RX2[0]=0x00;
+      RX2[1]=0x00;
+	  RX2[2]=0x00;
+	  RX2[3]=0x00;
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, RX2, 4, 100);
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+
+
+// CAU HINH CONFIG 1: MODE2
 	  TX[0]=0x00 + 64; // + 64 tương ứng với việc write data vào thanh ghi 0h
-	  TX[1]=0x05;       // ghi giá trị 03h
+	  TX[1]=0x03;       // ghi giá trị 03h
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
 	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 2, 100);
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
 	  HAL_Delay(50);
-
-
-
-	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 1);
-	  HAL_Delay(2);
-	  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 1);
-	  HAL_Delay(1);
-	  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 0);
-	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
 	  //HAL_Delay(10);
-	  TX[0]=0x00;	// đọc thanh ghi tại địa chỉ 00h
+	  TX[0]=0x00;	// đ�?c thanh ghi tại địa chỉ 00h
 	  TX[1]=0x00;
       TX[2]=0x00;
 	  TX[3]=0x00;
@@ -206,38 +205,108 @@ int main(void)
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
 
 
-//	  TX[0]=0x11;	// đọc thanh ghi tại địa chỉ 11h
-//	  TX[1]=0x00;
-//      TX[2]=0x00;
-//	  TX[3]=0x00;
-//
-//	  RX[0]=0x00;
-//      RX[1]=0x00;
-//	  RX[2]=0x00;
-//	  RX[3]=0x00;
-//
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
-//	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 4, 100);
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  // tao xung
+	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 1);
+	  delay_1us(1);
+	  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, 0);
 
-//	  TX[0]=0x12;
-//	  TX[1]=0x00;
-//      TX[2]=0x00;
-//	  TX[3]=0x00;
-//
-//	  RX1[0]=0x00;
-//      RX1[1]=0x00;
-//	  RX1[2]=0x00;
-//	  RX1[3]=0x00;
-//
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
-//	  HAL_SPI_TransmitReceive(&hspi2, TX, RX1, 4, 100);
-//
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
-////	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
-////	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 2, 100);
-//
-//	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  delay_1us(5);
+	  //HAL_Delay(1);
+
+	  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 1);
+	  delay_1us(1);
+	  HAL_GPIO_WritePin(STOP_TDC_GPIO_Port, STOP_TDC_Pin, 0);
+
+
+	  // end tao xung
+	  HAL_Delay(100);
+
+
+
+	  // DOC THANH GHI 0x11, CLOCK_COUNT1
+	  TX[0]=0x11;	// đ�?c thanh ghi tại địa chỉ 11h; 00 la doc, 64 la ghi
+	  TX[1]=0x00;
+      TX[2]=0x00;
+	  TX[3]=0x00;
+
+	  CLOCK_COUNT1[0]=0x00;
+      CLOCK_COUNT1[1]=0x00;
+	  CLOCK_COUNT1[2]=0x00;
+	  CLOCK_COUNT1[3]=0x00;
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, CLOCK_COUNT1, 4, 100);
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  HAL_Delay(50);
+
+	  // DOC THANH GHI 0x1B, CALIBRATION1
+	  TX[0]=0x1B;	// đ�?c thanh ghi tại địa chỉ 1Bh; 00 la doc, 64 la ghi
+	  TX[1]=0x00;
+      TX[2]=0x00;
+	  TX[3]=0x00;
+
+	  CALIBRATION1[0]=0x00;
+	  CALIBRATION1[1]=0x00;
+	  CALIBRATION1[2]=0x00;
+	  CALIBRATION1[3]=0x00;
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, CALIBRATION1, 4, 100);
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  HAL_Delay(50);
+
+	  // DOC THANH GHI 0x1C, CALIBRATION2
+	  TX[0]=0x1C;	// đ�?c thanh ghi tại địa chỉ 1Ch; 00 la doc, 64 la ghi
+	  TX[1]=0x00;
+      TX[2]=0x00;
+	  TX[3]=0x00;
+
+	  CALIBRATION2[0]=0x00;
+	  CALIBRATION2[1]=0x00;
+	  CALIBRATION2[2]=0x00;
+	  CALIBRATION2[3]=0x00;
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, CALIBRATION2, 4, 100);
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  HAL_Delay(50);
+
+	  // DOC THANH GHI 0x10, TIME1
+	  TX[0]=0x10;	// đ�?c thanh ghi tại địa chỉ 10h; 00 la doc, 64 la ghi
+	  TX[1]=0x00;
+      TX[2]=0x00;
+	  TX[3]=0x00;
+
+	  TIME1[0]=0x00;
+	  TIME1[1]=0x00;
+	  TIME1[2]=0x00;
+	  TIME1[3]=0x00;
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, TIME1, 4, 100);
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  HAL_Delay(50);
+
+	  // DOC THANH GHI 0x12, TIME2
+	  TX[0]=0x12;	// đ�?c thanh ghi tại địa chỉ 12h; 00 la doc, 64 la ghi
+	  TX[1]=0x00;
+      TX[2]=0x00;
+	  TX[3]=0x00;
+
+	  TIME2[0]=0x00;
+	  TIME2[1]=0x00;
+	  TIME2[2]=0x00;
+	  TIME2[3]=0x00;
+
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
+	  HAL_SPI_TransmitReceive(&hspi2, TX, TIME2, 4, 100);
+	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
+	  HAL_Delay(50);
+
+	  flag = 0;
+	  }
+
+
 	  HAL_Delay(100);
   }
   /* USER CODE END 3 */
@@ -260,10 +329,14 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 80;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -273,12 +346,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -366,9 +439,9 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
@@ -377,13 +450,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, LED0_Pin|LED1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, START_TDC_Pin|STOP_TDC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, STOP_TDC_Pin|enable_spi_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(START_TDC_GPIO_Port, START_TDC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(enable_spi_GPIO_Port, enable_spi_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
@@ -395,25 +468,25 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : START_TDC_Pin STOP_TDC_Pin */
-  GPIO_InitStruct.Pin = START_TDC_Pin|STOP_TDC_Pin;
+  /*Configure GPIO pins : STOP_TDC_Pin CSn_spi_Pin enable_spi_Pin */
+  GPIO_InitStruct.Pin = STOP_TDC_Pin|CSn_spi_Pin|enable_spi_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : START_TDC_Pin */
+  GPIO_InitStruct.Pin = START_TDC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(START_TDC_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : KEY3_Pin KEY2_Pin KEY1_Pin GPIO_EXTI0_Pin */
   GPIO_InitStruct.Pin = KEY3_Pin|KEY2_Pin|KEY1_Pin|GPIO_EXTI0_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : CSn_spi_Pin enable_spi_Pin */
-  GPIO_InitStruct.Pin = CSn_spi_Pin|enable_spi_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED2_Pin */
   GPIO_InitStruct.Pin = LED2_Pin;
