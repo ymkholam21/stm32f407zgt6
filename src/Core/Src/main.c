@@ -256,7 +256,7 @@ int main(void)
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
 	  HAL_SPI_TransmitReceive(&hspi2, TX, RX, 2, 100);
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
-	  HAL_Delay(500);
+	  HAL_Delay(50);
 // DOC THANH GHI CONFIG 1
 	  	TX[0]=0x00;
 	  	TX[1]=0x00;
@@ -270,7 +270,7 @@ int main(void)
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 0);
 	  HAL_SPI_TransmitReceive(&hspi2, TX, REG_VALUE, 2, 100);
 	  HAL_GPIO_WritePin(CSn_spi_GPIO_Port, CSn_spi_Pin, 1);
-	  HAL_Delay(500);
+	  HAL_Delay(50);
 
 
 
